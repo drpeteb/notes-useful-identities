@@ -1,0 +1,237 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{IEEEtrantools}
+\usepackage{color}
+
+\newenvironment{meta}[0]{\color{red} \em}{}
+
+\title{Really Useful Proofs and Identities}
+\author{Pete Bunch}
+
+\begin{document}
+
+\maketitle
+
+\section{Schur Complement Decomposition}
+
+This is an identity for the inverse of a block matrix which arises by doing block-wise Gaussian elimination.
+%
+\begin{IEEEeqnarray}{rCl}
+ \begin{bmatrix} \Sigma_{1,1} & \Sigma_{1,2} \\ \Sigma_{2,1} & \Sigma_{2,2} \end{bmatrix}^{-1} & = & \begin{bmatrix} I & 0 \\ -\Sigma_{2,2}^{-1} \Sigma_{2,1} & I \end{bmatrix} \begin{bmatrix} \left( \Sigma_{1,1} - \Sigma_{1,2} \Sigma_{2,2}^{-1} \Sigma_{2,1} \right)^{-1} & 0 \\ 0 & \Sigma_{2,2}^{-1} \end{bmatrix} \begin{bmatrix} I & -\Sigma_{1,2} \Sigma_{2,2}^{-1} \\ 0 & I \end{bmatrix} \nonumber
+\end{IEEEeqnarray}
+
+Unsurprisingly, you can also do this the ``other way round''. The term $\left( \Sigma_{1,1} - \Sigma_{1,2} \Sigma_{2,2}^{-1} \Sigma_{2,1} \right)^{-1}$ is called the Schur complement. The two outer matrices are invertible and have determinant $1$.
+
+I use this most commonly on covariance matrices, which are symmetric, so a more useful but less general form is as follows.
+%
+\begin{IEEEeqnarray}{rCl}
+ \begin{bmatrix} \Sigma_{1,1} & \Sigma_{1,2} \\ \Sigma_{1,2}^T & \Sigma_{2,2} \end{bmatrix}^{-1} & = & \begin{bmatrix} I & 0 \\ -\Sigma_{2,2}^{-1} \Sigma_{1,2}^T & I \end{bmatrix} \begin{bmatrix} \left( \Sigma_{1,1} - \Sigma_{1,2} \Sigma_{2,2}^{-1} \Sigma_{1,2}^T \right)^{-1} & 0 \\ 0 & \Sigma_{2,2}^{-1} \end{bmatrix} \begin{bmatrix} I & -\Sigma_{1,2} \Sigma_{2,2}^{-1} \\ 0 & I \end{bmatrix} \nonumber
+\end{IEEEeqnarray}
+
+
+
+\section{Woodbury Identity}
+
+Also known as the block matrix inversion formula or the matrix inversion lemma. This is derived by doing two Schur complement decompositions, one each way round, and then equating a diagonal block. Or by just multiplying the right hand side by the inverse of the left.
+%
+\begin{IEEEeqnarray}{rCl}
+ \left( A + D B C \right)^{-1} & = & A^{-1} - A^{-1} D \left(B^{-1} + C A^{-1} D\right)^{-1} C A^{-1} \nonumber
+\end{IEEEeqnarray}
+
+Again, I use this most often when manipulating Gaussian, in which case $D = C^T$, so I like the following form.
+%
+\begin{IEEEeqnarray}{rCl}
+ \left( A + C^T B C \right)^{-1} & = & A^{-1} - A^{-1} C^T \left(B^{-1} + C A^{-1} C^T\right)^{-1} C A^{-1} \nonumber
+\end{IEEEeqnarray}
+
+
+
+\section{Gaussian Identities}
+
+The following notation is used for Gaussians.
+%
+\begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(x|m,P) & = & \left| \left| 2 \pi P \right| \right|^{-\frac{1}{2}} \exp \left\{ -\frac{1}{2} \left[ (x-m)^T P^{-1} (x-m) \right] \right\} dx \nonumber
+\end{IEEEeqnarray}
+
+\subsection{The Gaussian Integral}
+
+This is fundamental.
+%
+\begin{IEEEeqnarray}{rCl}
+ \int \exp \left\{ -\frac{1}{2} \left[ (x-m)^T P^{-1} (x-m) \right] \right\} dx & = & \left| \left| 2 \pi P \right| \right|^{\frac{1}{2}} \nonumber
+\end{IEEEeqnarray}
+
+\subsection{Completing the Square}
+
+This is just a re-jigging of the Gaussian integral which is a super useful shortcut.
+%
+\begin{IEEEeqnarray}{rCl}
+ \IEEEeqnarraymulticol{3}{l}{ \int \exp \left\{ -\frac{1}{2} \left[ x^T \Upsilon x - 2 \lambda^T x + c \right] \right\} dx } \nonumber \\
+   & = & \int \exp \left\{ -\frac{1}{2} \left[ (x - \Upsilon^{-1} \lambda)^T \Upsilon (x - \Upsilon^{-1} \lambda) - \lambda^T \Upsilon^{-1} \lambda + c \right] \right\} dx \nonumber \\
+   & = & \left| \left| 2 \pi \Upsilon^{-1} \right| \right|^{\frac{1}{2}} \exp \left\{ -\frac{1}{2} \left[ c - \lambda^T \Upsilon^{-1} \lambda \right] \right\} \nonumber
+\end{IEEEeqnarray}
+
+\subsection{Inverting a Gaussian}
+
+Consider a Gaussian density over a variable $y$ conditional on a variable $x$, where $A$ is an invertible matrix. This can be rewritten as an unnormalised Gaussian density over $x$ conditional on $y$.
+%
+\begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(y|Ax,Q) & = & \left| \left| A \right| \right|^{-1} \mathcal{N}(x|A^{-1}y, A^{-1} Q A^{-T}) \nonumber
+\end{IEEEeqnarray}
+
+Proof:
+{\footnotesize \begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(y|Ax,Q) & = & \left| \left| 2 \pi Q \right| \right|^{-\frac{1}{2}} \exp \left\{ -\frac{1}{2} \left[ (y-Ax)^T Q^{-1} (y-Ax) \right] \right\} \nonumber \\
+                     & = & \left| \left| 2 \pi Q \right| \right|^{-\frac{1}{2}} \exp \left\{ -\frac{1}{2} \left[ (x-A^{-1}y)^T A^T Q^{-1} A (x-A^{-1}y) \right] \right\} \nonumber \\
+                     & = & \frac{\left| \left| 2 \pi \left(A^T Q^{-1} A\right)^{-1} \right| \right|^{\frac{1}{2}}}{\left| \left| 2 \pi Q \right| \right|^{\frac{1}{2}}} \mathcal{N}(x|A^{-1}y, \left(A^T Q^{-1} A\right)^{-1}) \nonumber \\
+                     & = & \left| \left| A \right| \right|^{-1} \mathcal{N}(x|A^{-1}y, A^{-1} Q A^{-T}) \nonumber
+\end{IEEEeqnarray} }
+
+\subsection{Conditioning a Gaussian}
+
+This uses the Schur complement decomposition on the covariance matrix of a joint Gaussian.
+%
+\begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(x|m,P) & = & \mathcal{N} \left( \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \bigg| \begin{bmatrix} m_1 \\ m_2 \end{bmatrix}, \begin{bmatrix} P_1 & C \\ C^T & P_2 \end{bmatrix} \right) \nonumber \\
+ & = & \mathcal{N}(x_1|m_1 + C P_2^{-1} (x_2 - m_2), P_1 - C P_2^{-1} C^T) \mathcal{N}(x_2|m_2,P_2) \nonumber
+\end{IEEEeqnarray}
+
+Proof:
+%
+{\tiny \begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(x|m,P) & = & \mathcal{N} \left( \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \bigg| \begin{bmatrix} m_1 \\ m_2 \end{bmatrix}, \begin{bmatrix} P_1 & C \\ C^T & P_2 \end{bmatrix} \right) \nonumber \\
+ \qquad & = & \left|\left|2 \pi \begin{bmatrix} P_1 & C \\ C^T & P_2 \end{bmatrix}^{-1}\right|\right|^{1/2} \exp\left\{ -\frac{1}{2} \left[ \begin{bmatrix} x_1 - m_1 \\ x_2 - m_2 \end{bmatrix}^T \begin{bmatrix} P_1 & C \\ C^T & P_2 \end{bmatrix}^{-1} \begin{bmatrix} x_1 - m_1 \\ x_2 - m_2 \end{bmatrix} \right] \right\} \nonumber \\
+ & = & \left|\left|2 \pi \begin{bmatrix} (P_1 - C P_2^{-1} C^T)^{-1} & 0 \\ 0 & P_2^{-1} \end{bmatrix}\right|\right|^{1/2} \nonumber \\
+ &   & \times \exp\left\{ -\frac{1}{2} \left[ \begin{bmatrix} x_1 - m_1 \\ x_2 - m_2 \end{bmatrix}^T \begin{bmatrix} I & 0 \\ -P_2^{-1} C^T & I \end{bmatrix} \begin{bmatrix} (P_1 - C P_2^{-1} C^T)^{-1} & 0 \\ 0 & P_2^{-1} \end{bmatrix} \begin{bmatrix} I & - C P_2^{-1} \\ 0 & I  \end{bmatrix} \begin{bmatrix} x_1 - m_1 \\ x_2 - m_2 \end{bmatrix} \right] \right\} \nonumber \\
+ & = & \left|\left|2 \pi (P_1 - C P_2^{-1} C^T)\right|\right|^{-1/2} \exp\left\{ -\frac{1}{2} \left[ \left[ (x_1 - m_1) - C P_2^{-1} (x_2 - m_2) \right]^T (P_1 - C P_2^{-1} C^T)^{-1} \left[ (x_1 - m_1) - C P_2^{-1} (x_2 - m_2) \right] \right] \right\} \nonumber \\
+ &   & \times \left|\left|2 \pi P_2\right|\right|^{-1/2} \exp\left\{ -\frac{1}{2} \left[ (x_2 - m_2)^T P_2^{-1} (x_2 - m_2) \right] \right\} \nonumber \\
+ & = & \mathcal{N}(x_1|m_1 + C P_2^{-1} (x_2 - m_2), P_1 - C P_2^{-1} C^T) \mathcal{N}(x_2|m_2,P_2) \nonumber
+\end{IEEEeqnarray} }
+
+This can also be done the ``other way around''.
+
+\subsection{Unconditioning a Gaussian}
+
+We can reverse the conditioning process to give us this handy little formula.
+%
+\begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(y|Ax,Q) \mathcal{N}(x|m,P) & = & \mathcal{N}\left(\begin{bmatrix} y \\ x \end{bmatrix}\bigg|\begin{bmatrix} A m \\ m \end{bmatrix},\begin{bmatrix} Q + A P A^T & A P \\ P A^T & P \end{bmatrix}\right) \nonumber
+\end{IEEEeqnarray}
+
+Proof:
+%
+\begin{IEEEeqnarray}{rCl}
+\mathcal{N}\left(\begin{bmatrix} y \\ x \end{bmatrix}\bigg|\begin{bmatrix} \zeta \\ \xi \end{bmatrix},\begin{bmatrix} \Sigma_1 & \Sigma_{1,2} \\ \Sigma_{1,2}^T & \Sigma_2 \end{bmatrix}\right) & = & \mathcal{N}(y|\zeta + \Sigma_{1,2} \Sigma_2^{-1} (x - \xi), \Sigma_1 - \Sigma_{1,2} \Sigma_2^{-1} \Sigma_{1,2}^T) \mathcal{N}(x|\xi,\Sigma_2) \nonumber
+\end{IEEEeqnarray}
+
+First equate the easy terms.
+%
+\begin{IEEEeqnarray}{rCl}
+ \xi      & = & m \nonumber \\
+ \Sigma_2 & = & P \nonumber
+\end{IEEEeqnarray}
+
+Now equate the means and rearrange.
+%
+\begin{IEEEeqnarray}{rCl}
+ \zeta + \Sigma_{1,2} P^{-1} (x - m) & = & A x \nonumber \\
+ (A - \Sigma_{1,2} P^{-1}) x & = & \zeta - \Sigma_{1,2} P^{-1} m \nonumber
+\end{IEEEeqnarray}
+
+For a valid Gaussian, $\zeta$ must be independent of $x$, which means we can split this up.
+%
+\begin{IEEEeqnarray}{rCl}
+ \Sigma_{1,2} & = & A P \nonumber \\
+ \xi & = & A m \nonumber
+\end{IEEEeqnarray}
+
+Finally, equate the variances.
+%
+\begin{IEEEeqnarray}{rCl}
+ \Sigma_1 & = & A P A^T + Q \nonumber
+\end{IEEEeqnarray}
+
+And that's it.
+
+\subsection{Switching a Gaussian Product}
+
+If we use the unconditioning formula then the conditioning formula, we get the following switching trick. Useful for a Kalman update.
+%
+\begin{IEEEeqnarray}{rCl}
+ \IEEEeqnarraymulticol{3}{l}{ \mathcal{N}(y|Ax,Q) \mathcal{N}(x|m,P) } \nonumber \\
+  & = & \mathcal{N}(y|Am,APA^T+Q) \mathcal{N}(x|m+PA^T(APA^T+Q)^{-1}(y-Am),P-PA^T(APA^T+Q)^{-1}AP) \nonumber
+\end{IEEEeqnarray}
+
+\subsection{Marginalising a Gaussian Product}
+
+This one follows by switching then doing the integral. Useful for a Kalman prediction.
+%
+\begin{IEEEeqnarray}{rCl}
+ \int \mathcal{N}(y|Ax,Q) \mathcal{N}(x|m,P) dx & = & \mathcal{N}(y|Am,APA^T+Q) \nonumber
+\end{IEEEeqnarray}
+
+\subsection{Representing a Degenerate Gaussian}
+
+If a Gaussian has a degenerate covariance matrix, then the standard form for the density does not work, because the determinant is zero. For many proofs and derivations, it is then helpful to write the density in the following form.
+%
+\begin{IEEEeqnarray}{rCl}
+ \mathcal{N}(x|m,P) & = & \int \mathcal{N}(\epsilon|0,1) \delta_{m+F\epsilon}(x) d\epsilon \nonumber
+\end{IEEEeqnarray}
+
+$P = FF^T$ is a rank factorisation of the covariance matrix. So $F$ is a ``tall'' matrix.
+
+Proof:
+%
+\begin{IEEEeqnarray}{rCl}
+ \int \mathcal{N}(\epsilon|0,1) \delta_{m+F\epsilon}(x) d\epsilon & = & \lim_{h=0} \int \mathcal{N}(\epsilon|0,1) \mathcal{N}(x|m+F\epsilon,hI) d\epsilon \nonumber \\
+ & = & \lim_{h=0} \mathcal{N}(x|m,FF^T+hI) \nonumber \\
+ & = & \mathcal{N}(x|m,P) \nonumber
+\end{IEEEeqnarray}
+
+\section{Kalman Filter}
+
+The Kalman filter is the solution to the Bayesian filtering recursions for linear Gaussian dynamics. The transition and observation densities are Gaussian with linear functions for means.
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_{k}|x_{k-1}) & = & \mathcal{N}(x_k|A x_{k-1},Q) \nonumber \\
+ p(y_{k}|x_{k})   & = & \mathcal{N}(y_k|C x_k,R) \nonumber
+\end{IEEEeqnarray}
+
+Assume the filtering and predictive filtering densities take the following forms.
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_k|y_{1:k})   & = & \mathcal{N}(x_k|m_k,P_k) \nonumber \\
+ p(x_k|y_{1:k-1}) & = & \mathcal{N}(x_k|\hat{m}_k,\hat{P}_k) \nonumber
+\end{IEEEeqnarray}
+
+The Bayesian filtering recursions are as follows.
+
+Prediction:
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_k|y_{1:k-1}) & = & \int p(x_k|x_{k-1}) p(x_{k-1}|y_{1:k-1}) dx_{k-1} \nonumber \\
+                  & = & \int \mathcal{N}(x_k|A x_k,Q) \mathcal{N}(x_{k-1}|m_{k-1},P_{k-1}) \nonumber \\
+                  & = & \mathcal{N}(x_k|A m_{k-1},A P_{k-1} A^T + Q) \nonumber
+\end{IEEEeqnarray}
+
+Update:
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_k|y_{1:k}) & = & \frac{ p(y_k|x_k) p(x_k|y_{1:k}) }{ \int p(y_k|x_k) p(x_k|y_{1:k}) dx_{k-1} } \nonumber \\
+                & = & \frac{ \mathcal{N}(y_k|C x_k,R) \mathcal{N}(x_k|\hat{m}_k,\hat{P}_k) }{ \int \mathcal{N}(y_k|C x_k,R) \mathcal{N}(x_k|\hat{m}_k,\hat{P}_k) dx_k } \nonumber \\
+                & = & \frac{ \mathcal{N}(y|C \hat{m}_k,C \hat{P}_k C^T+R) \mathcal{N}(x_k|m_k,P_k) }{ \mathcal{N}(y|C \hat{m}_k,C \hat{P}_k C^T+R) } \nonumber \\
+                & = & \mathcal{N}(x_k|m_k,P_k) \nonumber ,
+\end{IEEEeqnarray}
+
+where the updated mean and covariance are given by,
+%
+\begin{IEEEeqnarray}{rCl}
+ m_k & = & \hat{m}_k+\hat{P}_k C^T(CPC^T+R)^{-1}(y-C\hat{m}_k) \nonumber \\
+ P_k & = & \hat{P}_k-\hat{P}_k C^T(C \hat{P}_k C^T+R)^{-1} C \hat{P}_k \nonumber     .
+\end{IEEEeqnarray}
+
+Hence the derivation of the Kalman filter is simply an application of the marginalisation formula (twice) and the switching formula (once).
+
+\end{document} 

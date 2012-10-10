@@ -1,0 +1,17 @@
+\documentclass[landscape]{article}
+
+\usepackage{amsmath}
+\usepackage{IEEEtrantools}
+\usepackage{color}
+
+\newenvironment{meta}[0]{\color{red} \em}{}
+
+\begin{document}
+
+{\huge
+\begin{IEEEeqnarray}{rCl}
+ \left( A + C^T B C \right)^{-1} & = & A^{-1} - A^{-1} C^T \left(B^{-1} + C A^{-1} C^T\right)^{-1} C A^{-1} \nonumber
+\end{IEEEeqnarray}
+}
+
+\end{document}
