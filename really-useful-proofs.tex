@@ -234,4 +234,41 @@ where the updated mean and covariance are given by,
 
 Hence the derivation of the Kalman filter is simply an application of the marginalisation formula (twice) and the switching formula (once).
 
+\section{Conjugate Priors}
+
+\subsection{Unknown Variance of a Univariate Gaussian}
+
+We want to estimate the variance of a Gaussian density for a random state variable.
+
+\begin{IEEEeqnarray}{rCl}
+ p(x|\sigma^2) & = & \mathcal{N}(x|\mu,\sigma^2) \nonumber
+\end{IEEEeqnarray}
+
+The conjugate prior for the unknown variance of a Gaussian, $\sigma^2$ is an inverse gamma distribution. However, the gamma distribution is better documented and also (crucially) has a built in MATLAB implementation, so it's preferable to deal with that. Therefore we define a reciprocal variable.
+%
+\begin{IEEEeqnarray}{rCl}
+ \tau & = & \frac{1}{\sigma^2} \nonumber
+\end{IEEEeqnarray}
+
+Here we work with the shape/scale parameterisation of the gamma distribution.
+%
+\begin{IEEEeqnarray}{rCl}
+ p(\tau) & \propto & \tau^{-a_0-1} \exp\left\{ -\frac{b_0}{\tau} \right\} \nonumber
+\end{IEEEeqnarray}
+
+The posterior is also a gamma distribution.
+%
+\begin{IEEEeqnarray}{rCl}
+ p(\tau | x_{1:N}) & = & \prod_{i=1}^{N} p(x_i | \tau) p(\tau) \nonumber \\
+             & \propto & \prod_{i=1}^{N} \left[ \tau^{\frac{1}{2}} \exp\left\{ -\frac{1}{2} \tau (x_i - \mu_i)^2 \right\} \right] \tau^{-a_0-1} \exp\left\{ -\frac{b_0}{\tau} \right\} \nonumber \\
+                   & = & \tau^{a_0 + \frac{N}{2} - 1} \exp\left\{ -\frac{1}{\tau} \left[ \frac{1}{b_0} + \frac{1}{2}\sum_{i=1}^{N} (x_i - \mu_i)^2 \right] \right\}
+\end{IEEEeqnarray}
+
+The update rule is as follows.
+%
+\begin{IEEEeqnarray}{rCl}
+ a & = & a_0 + \frac{N}{2} \nonumber \\
+ \frac{1}{b} & = & \frac{1}{b_0} + \frac{1}{2}\sum_{i=1}^{N} (x_i - \mu_i)^2 \nonumber
+\end{IEEEeqnarray}
+
 \end{document} 
