@@ -117,7 +117,7 @@ This can also be done the ``other way around''.
 We can reverse the conditioning process to give us this handy little formula.
 %
 \begin{IEEEeqnarray}{rCl}
- \mathcal{N}(y|Ax,Q) \mathcal{N}(x|m,P) & = & \mathcal{N}\left(\begin{bmatrix} y \\ x \end{bmatrix}\bigg|\begin{bmatrix} A m \\ m \end{bmatrix},\begin{bmatrix} Q + A P A^T & A P \\ P A^T & P \end{bmatrix}\right) \nonumber
+ \mathcal{N}(y|Ax+b,Q) \mathcal{N}(x|m,P) & = & \mathcal{N}\left(\begin{bmatrix} y \\ x \end{bmatrix}\bigg|\begin{bmatrix} A m + b \\ m \end{bmatrix},\begin{bmatrix} Q + A P A^T & A P \\ P A^T & P \end{bmatrix}\right) \nonumber
 \end{IEEEeqnarray}
 
 Proof:
@@ -136,15 +136,15 @@ First equate the easy terms.
 Now equate the means and rearrange.
 %
 \begin{IEEEeqnarray}{rCl}
- \zeta + \Sigma_{1,2} P^{-1} (x - m) & = & A x \nonumber \\
- (A - \Sigma_{1,2} P^{-1}) x & = & \zeta - \Sigma_{1,2} P^{-1} m \nonumber
+ \zeta + \Sigma_{1,2} P^{-1} (x - m) & = & A x + b \nonumber \\
+ (A - \Sigma_{1,2} P^{-1}) x & = & \zeta - \Sigma_{1,2} P^{-1} m - b \nonumber
 \end{IEEEeqnarray}
 
 For a valid Gaussian, $\zeta$ must be independent of $x$, which means we can split this up.
 %
 \begin{IEEEeqnarray}{rCl}
  \Sigma_{1,2} & = & A P \nonumber \\
- \xi & = & A m \nonumber
+ \xi & = & A m + b\nonumber
 \end{IEEEeqnarray}
 
 Finally, equate the variances.
@@ -160,8 +160,8 @@ And that's it.
 If we use the unconditioning formula then the conditioning formula, we get the following switching trick. Useful for a Kalman update.
 %
 \begin{IEEEeqnarray}{rCl}
- \IEEEeqnarraymulticol{3}{l}{ \mathcal{N}(y|Ax,Q) \mathcal{N}(x|m,P) } \nonumber \\
-  & = & \mathcal{N}(y|Am,APA^T+Q) \mathcal{N}(x|m+PA^T(APA^T+Q)^{-1}(y-Am),P-PA^T(APA^T+Q)^{-1}AP) \nonumber
+ \IEEEeqnarraymulticol{3}{l}{ \mathcal{N}(y|Ax+b,Q) \mathcal{N}(x|m,P) } \nonumber \\
+  & = & \mathcal{N}(y|Am+b,APA^T+Q) \mathcal{N}(x|m+PA^T(APA^T+Q)^{-1}(y-Am-b),P-PA^T(APA^T+Q)^{-1}AP) \nonumber
 \end{IEEEeqnarray}
 
 \subsection{Marginalising a Gaussian Product}
@@ -169,7 +169,7 @@ If we use the unconditioning formula then the conditioning formula, we get the f
 This one follows by switching then doing the integral. Useful for a Kalman prediction.
 %
 \begin{IEEEeqnarray}{rCl}
- \int \mathcal{N}(y|Ax,Q) \mathcal{N}(x|m,P) dx & = & \mathcal{N}(y|Am,APA^T+Q) \nonumber
+ \int \mathcal{N}(y|Ax+b,Q) \mathcal{N}(x|m,P) dx & = & \mathcal{N}(y|Am+b,APA^T+Q) \nonumber
 \end{IEEEeqnarray}
 
 \subsection{Representing a Degenerate Gaussian}
@@ -185,12 +185,14 @@ $P = FF^T$ is a rank factorisation of the covariance matrix. So $F$ is a ``tall'
 Proof:
 %
 \begin{IEEEeqnarray}{rCl}
- \int \mathcal{N}(\epsilon|0,1) \delta_{m+F\epsilon}(x) d\epsilon & = & \lim_{h=0} \int \mathcal{N}(\epsilon|0,1) \mathcal{N}(x|m+F\epsilon,hI) d\epsilon \nonumber \\
- & = & \lim_{h=0} \mathcal{N}(x|m,FF^T+hI) \nonumber \\
+ \int \mathcal{N}(\epsilon|0,1) \delta_{m+F\epsilon}(x) d\epsilon & = & \lim_{h \rightarrow 0} \int \mathcal{N}(\epsilon|0,1) \mathcal{N}(x|m+F\epsilon,hI) d\epsilon \nonumber \\
+ & = & \lim_{h \rightarrow 0} \mathcal{N}(x|m,FF^T+hI) \nonumber \\
  & = & \mathcal{N}(x|m,P) \nonumber
 \end{IEEEeqnarray}
 
-\section{Kalman Filter}
+\section{Kalman Filters}
+
+\subsection{Exact Kalman Filter for Linear Gaussian Models}
 
 The Kalman filter is the solution to the Bayesian filtering recursions for linear Gaussian dynamics. The transition and observation densities are Gaussian with linear functions for means.
 %
@@ -212,7 +214,7 @@ Prediction:
 %
 \begin{IEEEeqnarray}{rCl}
  p(x_k|y_{1:k-1}) & = & \int p(x_k|x_{k-1}) p(x_{k-1}|y_{1:k-1}) dx_{k-1} \nonumber \\
-                  & = & \int \mathcal{N}(x_k|A x_k,Q) \mathcal{N}(x_{k-1}|m_{k-1},P_{k-1}) \nonumber \\
+                  & = & \int \mathcal{N}(x_k|A x_{k-1},Q) \mathcal{N}(x_{k-1}|m_{k-1},P_{k-1}) \nonumber \\
                   & = & \mathcal{N}(x_k|A m_{k-1},A P_{k-1} A^T + Q) \nonumber
 \end{IEEEeqnarray}
 
@@ -228,11 +230,64 @@ Update:
 where the updated mean and covariance are given by,
 %
 \begin{IEEEeqnarray}{rCl}
- m_k & = & \hat{m}_k+\hat{P}_k C^T(CPC^T+R)^{-1}(y-C\hat{m}_k) \nonumber \\
+ m_k & = & \hat{m}_k+\hat{P}_k C^T(C \hat{P}_k C^T+R)^{-1}(y-C\hat{m}_k) \nonumber \\
  P_k & = & \hat{P}_k-\hat{P}_k C^T(C \hat{P}_k C^T+R)^{-1} C \hat{P}_k \nonumber     .
 \end{IEEEeqnarray}
 
 Hence the derivation of the Kalman filter is simply an application of the marginalisation formula (twice) and the switching formula (once).
+
+\subsection{Extended Kalman Filter for Nonlinear-Gaussian Models}
+
+The Kalman filter can be modified for use with nonlinear systems of the following form.
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_{k}|x_{k-1}) & = & \mathcal{N}(x_k|f(x_{k-1}),Q) \nonumber \\
+ p(y_{k}|x_{k})   & = & \mathcal{N}(y_k|h(x_k),R) \nonumber
+\end{IEEEeqnarray}
+
+The solution is approximate. We replace $f(x_{k-1})$ and $h(x_k)$ with first order Taylor series approximations about the points $\bar{x}_{k-1}$ and $\bar{x}_{k}$ respectively.
+%
+\begin{IEEEeqnarray}{rCl}
+ f(x_{k-1}) & \approx & f(\bar{x}_{k-1}) + \underbrace{\frac{\partial f}{\partial x_{k-1}}\bigg|_{x_{k-1}=\bar{x}_{k-1}}}_{F_k} (x_{k-1}-\bar{x}_{k-1}) \nonumber \\
+ h(x_{k})   & \approx & h(\bar{x}_{k}) + \underbrace{\frac{\partial h}{\partial x_{k}}\bigg|_{x_{k}=\bar{x}_{k}}}_{H_k} (x_{k}-\bar{x}_{k}) \nonumber
+\end{IEEEeqnarray}
+
+Assume the filtering and predictive filtering densities take the following forms.
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_k|y_{1:k})   & = & \mathcal{N}(x_k|m_k,P_k) \nonumber \\
+ p(x_k|y_{1:k-1}) & = & \mathcal{N}(x_k|\hat{m}_k,\hat{P}_k) \nonumber
+\end{IEEEeqnarray}
+
+The Bayesian filtering recursions are as follows.
+
+Prediction:
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_k|y_{1:k-1}) & = & \int p(x_k|x_{k-1}) p(x_{k-1}|y_{1:k-1}) dx_{k-1} \nonumber \\
+                  & \approx & \int \mathcal{N}(x_k|f(\bar{x}_{k-1}) + F_k (x_{k-1} - \bar{x}_{k-1}),Q) \mathcal{N}(x_{k-1}|m_{k-1},P_{k-1}) \nonumber \\
+                  & = & \mathcal{N}(x_k|f(\bar{x}_{k-1}) + F_k(m_{k-1} - \bar{x}_{k-1}),F_k P_{k-1} F_k^T + Q) \nonumber \\
+                  & = & \mathcal{N}(x_k|f(\bar{x}_{k-1}),F_k P_{k-1} F_k^T + Q) \nonumber
+\end{IEEEeqnarray}
+
+The last line follows if we choose $\bar{x}_{k-1} = m_{k-1}$, which is a natural choice.
+
+Update:
+%
+\begin{IEEEeqnarray}{rCl}
+ p(x_k|y_{1:k}) & = & \frac{ p(y_k|x_k) p(x_k|y_{1:k}) }{ \int p(y_k|x_k) p(x_k|y_{1:k}) dx_{k-1} } \nonumber \\
+                & \approx & \frac{ \mathcal{N}(y_k|h(\bar{x}_k) + H_k (x_k - \bar{x}_k) ,R) \mathcal{N}(x_k|\hat{m}_k,\hat{P}_k) }{ \int \mathcal{N}(y_k|h(\bar{x}_k) + H_k (x_k - \bar{x}_k) ,R) \mathcal{N}(x_k|\hat{m}_k,\hat{P}_k) dx_k } \nonumber \\
+                & = & \mathcal{N}(x_k|m_k,P_k) \nonumber ,
+\end{IEEEeqnarray}
+
+where the updated mean and covariance are given by,
+%
+\begin{IEEEeqnarray}{rCl}
+ m_k & = & \hat{m}_k+\hat{P}_k H_k^T(H_k \hat{P}_k H_k^T+R)^{-1}(y-h(\bar{x}_k) + H_k (\bar{x}_k - \hat{m}_k)) \nonumber \\
+ P_k & = & \hat{P}_k-\hat{P}_k H_k^T(H_k \hat{P}_k H_k^T+R)^{-1} H_k \hat{P}_k \nonumber     .
+\end{IEEEeqnarray}
+
+As before, the mean update can be simplified by choosing $\bar{x}_{k} = \hat{m}_{k}$.
 
 \section{Conjugate Priors}
 
